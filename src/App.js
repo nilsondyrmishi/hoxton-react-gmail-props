@@ -1,25 +1,66 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState } from 'react'
+
+import initialEmails from './data/emails'
+import Header from "./components/header";
+import './App.css'
+import Emails from "./components/main";
+import LeftMenu from "./components/nav";
+const getReadEmails = emails => emails.filter(email => !email.read)
+
+const getStarredEmails = emails => emails.filter(email => email.starred)
 
 function App() {
+  const [emails, setEmails] = useState(initialEmails)
+  const [hideRead, setHideRead] = useState(false)
+  const [currentTab, setCurrentTab] = useState('inbox')
+
+  const unreadEmails = emails.filter(email => !email.read)
+  const starredEmails = emails.filter(email => email.starred)
+
+  const toggleStar = targetEmail => {
+    const updatedEmails = emails =>
+        emails.map(email =>
+            email.id === targetEmail.id
+                ? { ...email, starred: !email.starred }
+                : email
+        )
+    setEmails(updatedEmails)
+  }
+
+  const toggleRead = targetEmail => {
+    const updatedEmails = emails =>
+        emails.map(email =>
+            email.id === targetEmail.id ? { ...email, read: !email.read } : email
+        )
+    setEmails(updatedEmails)
+  }
+
+  let filteredEmails = emails
+
+  if (hideRead) filteredEmails = getReadEmails(filteredEmails)
+
+  if (currentTab === 'starred')
+    filteredEmails = getStarredEmails(filteredEmails)
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+      <div className="app">
+
+          <Header />
+          <LeftMenu
+              currentTab={currentTab}
+              setCurrentTab={setCurrentTab}
+              unreadEmails={unreadEmails}
+              starredEmails={starredEmails}
+              hideRead={hideRead}
+              setHideRead={setHideRead}
+          />
+          <Emails
+              filteredEmails={filteredEmails}
+              toggleRead={toggleRead}
+              toggleStar={toggleStar}
+          />
+      </div>
+  )
 }
 
-export default App;
+export default App
